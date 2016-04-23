@@ -1,0 +1,36 @@
+{
+  "name": "ftaskrunner-io",
+  "version": "1.0.0",
+  "description": "io Fluent tasks for FTaskRunner ",
+  "main": "index.js",
+  "dependencies": {
+    "ftaskrunner":"~1.0.0",
+    "guid":"~0.0.12",
+    "easyxml":"~2.0.1"
+  },
+  "author": "javadparvaresh <javadparvaresh@gmail.com>",
+  "engines": {
+    "node": "*"
+  },
+  "devDependencies": {
+    "gulp":"~3.9.1",
+    "gulp-mocha":"~2.2.0",
+    "chai":"~3.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/javadparvaresh/FTaskRunner-io.git"
+  },
+  "keywords": [
+    "fluent",
+    "nodejs",
+    "task",
+    "sync",
+    "io"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/javadparvaresh/FTaskRunner-io/issues"
+  },
+  "homepage": "https://github.com/javadparvaresh/FTaskRunner-io"
+}
