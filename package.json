@@ -1,7 +1,7 @@
 {
-  "name": "ftaskrunner-io",
+  "name": "ftaskrunner-dom",
   "version": "1.0.0",
-  "description": "io Fluent tasks for FTaskRunner ",
+  "description": "Dom Fluent tasks for FTaskRunner ",
   "main": "index.js",
   "dependencies": {
     "ftaskrunner":"~1.0.0",
