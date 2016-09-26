@@ -1,7 +1,4 @@
-var fs = require('fs');
-var path = require('path');
-var guid = require("guid");
-var easyxml = require("easyxml");
+var easyxml = require("cheerio");
 
 module.exports = function (container) {
 
@@ -9,186 +6,98 @@ module.exports = function (container) {
 
 
     tasks.push({
-        name:"ioReadFile",
-        def:function(instance,path,unicode){
-            return {
-                path:path,
-                unicode:unicode
-            };
+        name: "$",
+        def: function (instance) {
+            return {};
         },
-        exec:function(scope,next){
-            
-            var targetPath=scope.path;
-            if (targetPath==null)
-                targetPath=scope.$$input;
-            
-            var unicode="UTF-8";
-            if (scope.unicode)
-                unicode=unicode;
-            fs.readFile(targetPath,unicode,function(err,data){
-                if (err)
-                    throw err;
-                    
-                next(data);
-            });
-            
+        exec: function (scope, next) {
+            next(require("cheerio")(scope.$$input));
         }
     });
-    
-    
-    tasks.push({
-        name:"ioReadDir",
-        def:function(instance,path,options){
-            return {
-                includeDir:(options!=null && options.includeDir!=null)?options.includeDir:true,
-                includeFiles:(options!=null && options.includeFiles!=null)?options.includeFiles:true,
-                path:path
-            }
-        },
-        exec:function(scope,next){
-            
-            var target=scope.$$input;
-            if (scope.path)
-                target=scope.path;
 
-            fs.readdir(target,function(err,files){
-                
-                if (err)
-                    throw err;
-                
-                var result=[];
-                var checked=files.length;
-                for(var i=0;i<files.length;i++){
-                    file = files[i];
-                    filePath = target + '/' + file;
-                    
-                    if (scope.includeDir && scope.includeFiles){
-                        next(files);
-                        return;
-                    }
-                    
-                    (function(filePath){
-                        fs.stat(filePath,function(err,stat){
-                            
-                            if (err)
-                                throw err;
-                            
-                            if (scope.includeDir && stat.isDirectory()){
-                                result.push(filePath);
-                            }else if (scope.includeFiles && !stat.isDirectory()){
-                                result.push(filePath);
-                            }
-                            checked--;
-                            if (checked==0){
-                                next(result);
-                            }
-                        });
-                    })(filePath);
-                    
-                } // end of loops
-                
-                
-            });
-            
-        }
-    });
-    
+    /// this function find an element by a selector as jquery dom
     tasks.push({
-        name: "ioRawDump",
-        def: function (instacne,targetPath) {
+        name: "$find",
+        def: function (instance, selector) {
             return {
-                path: targetPath
+                selector: selector
             };
         },
         exec: function (scope, next) {
-            
-            var targetPath=scope.path;
-            targetPath = targetPath.replace("{guid}", guid.create())
-
-            
-            fs.writeFile(targetPath, scope.$$input, function (err) {
-                if (err) {
-                    throw err;
-                }
-                next(scope.$$input);
-            });
+            next(scope.$$input.find(scope.selector));
         }
     });
-    
+
+    // this function runs next chain on every dom elements
     tasks.push({
-        name: "ioXmlDump",
-        def: function (instacne,targetPath) {
+        name: "$each",
+        def: function (instance, selector) {
             return {
-                path: targetPath
+                selector: selector
             };
         },
         exec: function (scope, next) {
-            
-            var targetPath=scope.path;
-            targetPath = targetPath.replace("{guid}", guid.create())
-
-            var serializer = new easyxml({
-                singularize: true,
-                rootElement: 'response',
-                dateFormat: 'ISO',
-                manifest: true
-            });
-            
-
-            fs.writeFile(targetPath, serializer.render(scope.$$input), function (err) {
-                if (err) {
-                    throw err;
-                }
-                next(scope.$$input);
-            });
+            for (var i = 0; i < scope.$$input.length; i++) {
+                next(scope.$$input[i], false);
+            };
         }
     });
-    
     tasks.push({
-        name: "ioJsonDump",
-        def: function (instacne,targetPath) {
+        name: "$text",
+        def: function (instance, selector) {
             return {
-                path: targetPath
+                selector: selector
             };
         },
         exec: function (scope, next) {
-            
-            var targetPath=scope.path;
-            targetPath = targetPath.replace("{guid}", guid.create())
-            
-            fs.writeFile(targetPath, JSON.stringify(scope.$$input), function (err) {
-                if (err) {
-                    throw err;
-                }
-                next(scope.$$input);
-            });
+            next(require("cheerio")(scope.$$input).text());
         }
     });
-    
     tasks.push({
-        name: "ioJsonDump",
-        def: function (instacne,targetPath) {
+        name: "$html",
+        def: function (instance, selector) {
             return {
-                path: targetPath
+                selector: selector
             };
         },
         exec: function (scope, next) {
-            
-            var targetPath=scope.path;
-            targetPath = targetPath.replace("{guid}", guid.create())
-
-            var serializer = new easyxml();
-            
-
-            fs.writeFile(targetPath, JSON.stringify(scope.$$input), function (err) {
-                if (err) {
-                    throw err;
-                }
-                next(scope.$$input);
-            });
+            next(require("cheerio")(scope.$$input).html());
         }
     });
-    
+    tasks.push({
+        name: "$size",
+        def: function (instance, selector) {
+            return {
+                selector: selector
+            };
+        },
+        exec: function (scope, next) {
+            next(require("cheerio")(scope.$$input).length);
+        }
+    });
+    tasks.push({
+        name: "$attr",
+        def: function (instance, name) {
+            return {
+                name: name
+            };
+        },
+        exec: function (scope, next) {
+            next(require("cheerio")(scope.$$input).attr(scope.name));
+        }
+    });
+    tasks.push({
+        name: "$remove",
+        def: function (instance, selector) {
+            return {
+                selector: selector
+            };
+        },
+        exec: function (scope, next) {
+            next(require("cheerio")(scope.$$input).remove(scope.selector));
+        }
+    });
+
 
     return tasks;
 }
